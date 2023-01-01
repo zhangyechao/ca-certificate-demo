@@ -1,0 +1,7 @@
+# ListSortSample
+
+中文排序问题
+
+alpine 镜像，需要自行安装 icu-libs icu-data-full， 默认还是en-us，中文环境还是要单独指定 `LC_ALL`，`LANG`，`LANGUAGE`
+
+bullseye-slim 镜像，无需安装，但是默认还是en-us，中文环境还是要单独指定 `LC_ALL`，`LANG`，`LANGUAGE`
