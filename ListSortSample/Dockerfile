@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/runtime:6.0-bullseye-slim AS base
-ENV LC_ALL zh_CN
-ENV LANG zh_CN
-ENV LANGUAGE zh_CN
+# ENV LC_ALL zh_CN
+# ENV LANG zh_CN
+# ENV LANGUAGE zh_CN
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
