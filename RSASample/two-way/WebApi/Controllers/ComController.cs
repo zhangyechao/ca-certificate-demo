@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NETCore.Encrypt;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace WebApi.Controllers
 {
@@ -11,7 +12,7 @@ namespace WebApi.Controllers
         [HttpGet("req-pub")]
         public IActionResult ReqPub([FromQuery] string appId)
         {
-            if(string.IsNullOrWhiteSpace(appId)) return BadRequest("empty appId");
+            if(string.IsNullOrWhiteSpace(appId)) return BadRequest("invalid param");
 
             var publicKey = RSAKeyMapping.GetServerPublicKeyByAppId(appId);
             if(string.IsNullOrWhiteSpace(publicKey)) return BadRequest("invalid appId");
@@ -20,27 +21,14 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("set-pub")]
-        public IActionResult SetPub([FromHeader] string appId, [FromBody] RequestDto dto)
+        public IActionResult SetPub([FromHeader] string appId, [FromBody] string cpk)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.EncParm)) return BadRequest();
+            if (string.IsNullOrWhiteSpace(cpk)) return BadRequest("invalid param");
 
             var rsaKey = RSAKeyMapping.GetByAppId(appId);
-            if (rsaKey == null) return BadRequest();
+            if (rsaKey == null) return BadRequest("invalid appId");
 
-            // TODO
-            var clientPubBytes = Convert.FromBase64String(dto.EncParm).AsSpan();
-            List<byte> decBytes = new();
-            for (int i = 0; i < clientPubBytes.Length; i += 250)
-            {
-                var bytes = clientPubBytes.Slice(i, Math.Min(250, clientPubBytes.Length - i)).ToArray();
-                decBytes.AddRange(EncryptProvider.RSAEncrypt(rsaKey.ServerPrivateKey, bytes, RSAEncryptionPadding.Pkcs1, true));
-            }
-
-            //var decBytes = EncryptProvider.RSADecrypt(rsaKey.ServerPrivateKey, bytes, RSAEncryptionPadding.Pkcs1, true);
-
-            var dec = System.Text.Encoding.UTF8.GetString(decBytes.ToArray());
-
-            RSAKeyMapping.SetClientPublicKeyByAppId(appId, dec);
+            RSAKeyMapping.SetClientPublicKeyByAppId(appId, cpk);
 
             var aesKey = AesKeyMapping.GetAesByAppId(appId);
 
@@ -50,9 +38,9 @@ namespace WebApi.Controllers
                 AesKeyMapping.SetAes(appId, aesKey);
             }
 
-            var encAesKey = EncryptProvider.RSAEncrypt(dec, aesKey, RSAEncryptionPadding.Pkcs1, true);
+            var encAesKey = EncryptProvider.RSAEncrypt(cpk, Encoding.UTF8.GetBytes(aesKey), RSAEncryptionPadding.Pkcs1, true);
 
-            return Ok(new { data = encAesKey });
+            return Ok(new { data = Convert.ToBase64String(encAesKey) });
         }
     }
 }

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace ConsoleClient
 {
@@ -14,7 +13,7 @@ namespace ConsoleClient
         static void Main()
         {
             // 1. get rsa public key from server
-            var pub = GetPublicKey(_appId);
+            var pub = GetPublicKeyFromServer(_appId);
 
             if (string.IsNullOrWhiteSpace(pub))
             {
@@ -28,31 +27,21 @@ namespace ConsoleClient
 
             // 3. use rsa public key to encrypt the aes key
             var encAesKey = EncryptProvider.RSAEncrypt(pub, aesKey, RSAEncryptionPadding.Pkcs1, true);
-            
-            // 4. send the encryptd aes key to server
-            SetAesKey(_appId, encAesKey);
+            Console.WriteLine(encAesKey);
 
-            // 5. use aes key to encrypt request data
+            // 4. use aes key to encrypt request data
             var encData = EncryptProvider.AESEncrypt("catcherwong", aesKey);
 
             // 6. send the encrypted request data to server
-            var respData = BizReq(_appId, encData);
+            var respData = SendBizReq(_appId, encData, encAesKey);
 
             Console.WriteLine(respData);
         }
 
         static string GenAesKey()
-        {
-            StringBuilder sb = new();
-            for (int i = 0; i < 8; i++)
-            {
-                sb.Append(new Random().Next(1000, 9999));
-            }
+            => Guid.NewGuid().ToString("N");
 
-            return sb.ToString();
-        }
-
-        static string? GetPublicKey(string appId)
+        static string? GetPublicKeyFromServer(string appId)
         {
             var url = $"{_url}/com/req-pub?appId={appId}";
 
@@ -70,25 +59,12 @@ namespace ConsoleClient
             }
         }
 
-        static bool SetAesKey(string appId, string encAesKey)
-        {
-            var url = $"{_url}/com/set-key";
-
-            using HttpClient client = new();
-            var content = new StringContent(JsonConvert.SerializeObject(new { encParm = encAesKey }));
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            content.Headers.TryAddWithoutValidation("appId", appId);
-
-            var resp = client.PostAsync(url, content).GetAwaiter().GetResult();
-            return resp.IsSuccessStatusCode;
-        }
-
-        static string? BizReq(string appId, string data)
+        static string? SendBizReq(string appId, string data, string aesKey)
         {
             var url = $"{_url}/biz";
 
             using HttpClient client = new();
-            var content = new StringContent(JsonConvert.SerializeObject(new { encParm = data }));
+            var content = new StringContent(JsonConvert.SerializeObject(new { ep = data, eak = aesKey }));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             content.Headers.TryAddWithoutValidation("appId", appId);
 

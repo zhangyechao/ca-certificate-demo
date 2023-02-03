@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NETCore.Encrypt;
+using System.Security.Cryptography;
 
 namespace WebApi.Controllers
 {
@@ -10,15 +11,19 @@ namespace WebApi.Controllers
         [HttpPost]
         public IActionResult Post([FromHeader] string appId, [FromBody] RequestDto dto)
         {
-            if(string.IsNullOrWhiteSpace(appId)) return BadRequest();
-            if (dto == null || string.IsNullOrWhiteSpace(dto.EncParm)) return BadRequest();
+            if(string.IsNullOrWhiteSpace(appId)) return BadRequest("invalid appId");
+            if (dto == null 
+                || string.IsNullOrWhiteSpace(dto.EP)
+                || string.IsNullOrWhiteSpace(dto.EAK)) return BadRequest("invalid param");
 
-            var aesKey = AesKeyMapping.GetAesByAppId(appId);
-            if (string.IsNullOrWhiteSpace(aesKey)) return BadRequest();
+            var rsaKey = RSAKeyMapping.GetByAppId(appId);
+            if (rsaKey == null) return BadRequest("invalid appId");
 
-            var dec = EncryptProvider.AESDecrypt(dto.EncParm, aesKey);
+            var decAesKey = EncryptProvider.RSADecrypt(rsaKey.PrivateKey, dto.EAK, RSAEncryptionPadding.Pkcs1, true);
 
-            return Ok($"Hello, {dec}");
+            var decData = EncryptProvider.AESDecrypt(dto.EP, decAesKey);
+
+            return Ok($"Hello, {decData}");
         }
     }
 }

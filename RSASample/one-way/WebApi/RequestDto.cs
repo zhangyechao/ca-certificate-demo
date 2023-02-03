@@ -1,7 +1,17 @@
-﻿namespace WebApi
+﻿#nullable disable
+
+namespace WebApi
 {
     public class RequestDto
     { 
-        public string EncParm { get; set; }
+        /// <summary>
+        /// encrypted parameter
+        /// </summary>
+        public string EP { get; set; }
+
+        /// <summary>
+        /// encrypted aes key
+        /// </summary>
+        public string EAK { get; set; }
     }
 }

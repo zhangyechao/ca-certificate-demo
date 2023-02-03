@@ -1,10 +1,8 @@
-﻿using System.Text;
-
-namespace WebApi
+﻿namespace WebApi
 {
     public class AesKeyMapping
     {
-        private static Dictionary<string, string> _dict = new Dictionary<string, string>();
+        private static Dictionary<string, string> _dict = new();
 
         public static void SetAes(string appId, string key)
         {
@@ -19,14 +17,6 @@ namespace WebApi
         }
 
         public static string GenAesKey()
-        {
-            StringBuilder sb = new();
-            for (int i = 0; i < 8; i++)
-            {
-                sb.Append(new Random().Next(1000, 9999));
-            }
-
-            return sb.ToString();
-        }
+            => Guid.NewGuid().ToString("N");
     }
 }

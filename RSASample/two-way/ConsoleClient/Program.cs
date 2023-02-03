@@ -14,7 +14,7 @@ namespace ConsoleClient
         static void Main()
         {
             // 1. get rsa public key from server
-            var serverPub = GetPublicKey(_appId);
+            var serverPub = GetPublicKeyFromServer(_appId);
 
             if (string.IsNullOrWhiteSpace(serverPub))
             {
@@ -22,38 +22,35 @@ namespace ConsoleClient
                 return;
             }
 
-            // 2. generate client rsa
+            // 2. generate a new client rsa, or save rsa in configuration file
             var (clientPub, clientPri) = EncryptProvider.RSAToPem(true, 2048);
 
-            var clientPubBytes = Encoding.UTF8.GetBytes(clientPub).AsSpan();
-            List<byte> enBytes = new();
-            for (int i = 0; i < clientPubBytes.Length; i += 190)
+            // 3. send client public key to server and get the encrypted aes key from server
+            var encAesKey = SendCPK2ServerAndGetAKFromServer(_appId, clientPub);
+            
+            if (string.IsNullOrWhiteSpace(encAesKey))
             {
-                var bytes = clientPubBytes.Slice(i, Math.Min(190, clientPubBytes.Length - i)).ToArray();
-                enBytes.AddRange(EncryptProvider.RSAEncrypt(serverPub, bytes, RSAEncryptionPadding.Pkcs1, true));
+                Console.WriteLine("get aesKey error");
+                return;
             }
 
-            // 3. use server rsa public key to encrypt client public key
-            var encClientPub = Convert.ToBase64String(enBytes.ToArray());
+            Console.WriteLine($"encAesKey={encAesKey}");
 
-            // 4. send encrypted client public key to server 
-            // 5. get the encrypted aes key from server
-            var encAesKey = SetClientPublicKey(_appId, encClientPub);
+            // 4. use client private key to decrypt the encrypted aes key
+            var aesKeyBytes = EncryptProvider.RSADecrypt(clientPri, Convert.FromBase64String(encAesKey), RSAEncryptionPadding.Pkcs1, true);
+            var aesKey = Encoding.UTF8.GetString(aesKeyBytes);
+            Console.WriteLine($"aesKey={aesKey}");
 
-            // 6. use client private key to decrypt the encrypted aes key
-            var aesKey = EncryptProvider.RSADecrypt(clientPri, encAesKey, RSAEncryptionPadding.Pkcs1, true);
-            Console.WriteLine(aesKey);
-
-            // 7. use aes key to encrypt request data
+            // 5. use aes key to encrypt request data
             var encData = EncryptProvider.AESEncrypt("catcherwong", aesKey);
 
-            // 8. send the encrypted request data to server
-            var respData = BizReq(_appId, encData);
+            // 6. send the encrypted request data to server
+            var respData = SendBizReq(_appId, encData);
 
             Console.WriteLine(respData);
         }
 
-        static string? GetPublicKey(string appId)
+        static string? GetPublicKeyFromServer(string appId)
         {
             var url = $"{_url}/com/req-pub?appId={appId}";
 
@@ -71,12 +68,12 @@ namespace ConsoleClient
             }
         }
 
-        static string? SetClientPublicKey(string appId, string enc)
+        static string? SendCPK2ServerAndGetAKFromServer(string appId, string enc)
         {
             var url = $"{_url}/com/set-pub";
 
             using HttpClient client = new();
-            var content = new StringContent(JsonConvert.SerializeObject(new { encParm = enc }));
+            var content = new StringContent(JsonConvert.SerializeObject(enc));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             content.Headers.TryAddWithoutValidation("appId", appId);
 
@@ -93,20 +90,7 @@ namespace ConsoleClient
             }
         }
 
-        static bool SetAesKey(string appId, string encAesKey)
-        {
-            var url = $"{_url}/com/set-key";
-
-            using HttpClient client = new();
-            var content = new StringContent(JsonConvert.SerializeObject(new { encParm = encAesKey }));
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            content.Headers.TryAddWithoutValidation("appId", appId);
-
-            var resp = client.PostAsync(url, content).GetAwaiter().GetResult();
-            return resp.IsSuccessStatusCode;
-        }
-
-        static string? BizReq(string appId, string data)
+        static string? SendBizReq(string appId, string data)
         {
             var url = $"{_url}/biz";
 
