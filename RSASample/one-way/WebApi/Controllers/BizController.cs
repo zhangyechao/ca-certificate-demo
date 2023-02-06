@@ -19,9 +19,9 @@ namespace WebApi.Controllers
             var rsaKey = RSAKeyMapping.GetByAppId(appId);
             if (rsaKey == null) return BadRequest("invalid appId");
 
-            var decAesKey = EncryptProvider.RSADecrypt(rsaKey.PrivateKey, dto.EAK, RSAEncryptionPadding.Pkcs1, true);
+            var decAesKey = EncryptProvider.RSADecrypt(rsaKey.PrivateKey, Convert.FromBase64String(dto.EAK), RSAEncryptionPadding.Pkcs1, true);
 
-            var decData = EncryptProvider.AESDecrypt(dto.EP, decAesKey);
+            var decData = EncryptProvider.AESDecrypt(dto.EP, System.Text.Encoding.UTF8.GetString(decAesKey));
 
             return Ok($"Hello, {decData}");
         }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace ConsoleClient
 {
@@ -26,14 +27,13 @@ namespace ConsoleClient
             Console.WriteLine(aesKey);
 
             // 3. use rsa public key to encrypt the aes key
-            var encAesKey = EncryptProvider.RSAEncrypt(pub, aesKey, RSAEncryptionPadding.Pkcs1, true);
-            Console.WriteLine(encAesKey);
+            var encAesKey = EncryptProvider.RSAEncrypt(pub, Encoding.UTF8.GetBytes(aesKey), RSAEncryptionPadding.Pkcs1, true);
 
             // 4. use aes key to encrypt request data
             var encData = EncryptProvider.AESEncrypt("catcherwong", aesKey);
 
             // 6. send the encrypted request data to server
-            var respData = SendBizReq(_appId, encData, encAesKey);
+            var respData = SendBizReq(_appId, encData, Convert.ToBase64String(encAesKey));
 
             Console.WriteLine(respData);
         }

@@ -7,12 +7,12 @@ Console.WriteLine(pri);
 
 var str = "catcherwong";
 
-var encByte = EncryptProvider.RSAEncryptWithPem(pub, System.Text.Encoding.UTF8.GetBytes(str));
+var encByte = EncryptProvider.RSAEncrypt(pub, System.Text.Encoding.UTF8.GetBytes(str), System.Security.Cryptography.RSAEncryptionPadding.Pkcs1, true);
 var encStr =  Convert.ToBase64String(encByte);
 
 Console.WriteLine(encStr);
 
-var dec = EncryptProvider.RSADecryptWithPem(pri , Convert.FromBase64String(encStr));
+var dec = EncryptProvider.RSADecrypt(pri , Convert.FromBase64String(encStr), System.Security.Cryptography.RSAEncryptionPadding.Pkcs1, true);
 var decStr = System.Text.Encoding.UTF8.GetString(dec);
 
 Console.WriteLine(decStr);

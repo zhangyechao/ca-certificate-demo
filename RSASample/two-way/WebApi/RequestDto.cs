@@ -2,6 +2,6 @@
 {
     public class RequestDto
     { 
-        public string EncParm { get; set; }
+        public string EP { get; set; }
     }
 }

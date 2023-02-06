@@ -95,7 +95,7 @@ namespace ConsoleClient
             var url = $"{_url}/biz";
 
             using HttpClient client = new();
-            var content = new StringContent(JsonConvert.SerializeObject(new { encParm = data }));
+            var content = new StringContent(JsonConvert.SerializeObject(new { ep = data }));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             content.Headers.TryAddWithoutValidation("appId", appId);
 

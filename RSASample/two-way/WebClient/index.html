@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA + AES sample</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jsencrypt/3.3.1/jsencrypt.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        let appId = "appId-2";
+        let url = "http://localhost:7779";
+        let pub = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5glT4BrjEPaQxKDrP+Rv
+1FSiGNwrMAA7cMuMc/v9GnbrP32h/yTfTPkjiocty9z70nmx4WVahsIKelifnnRi
+E+Pq1MMipfgUbYjxhqoEdbwE6batGYcwFrkyQ4Vtm3ewdB8ArfDicXxH6elHSSuz
+BBVYUwOLCTlcR184EDofNeolDafNCa2kA6gWMdFoGTvjad1wvpeR60k/nXulLvH5
+RFcel0dv0EBHXkYQWfd1NAS+X1qc+8kZCo/ivR1aREPnefvXiiBmOolYSXCeGQ6r
+QpNN+fRHMmnRl2iKMAJZk4/wsj+sdebUoSaZnpNzy5VxWPrjDeozY7oBqHAYW10r
+IQIDAQAB
+-----END PUBLIC KEY-----
+        `;
+        console.log(pub);
+        let pri = `
+        -----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDmCVPgGuMQ9pDE
+oOs/5G/UVKIY3CswADtwy4xz+/0adus/faH/JN9M+SOKhy3L3PvSebHhZVqGwgp6
+WJ+edGIT4+rUwyKl+BRtiPGGqgR1vATptq0ZhzAWuTJDhW2bd7B0HwCt8OJxfEfp
+6UdJK7MEFVhTA4sJOVxHXzgQOh816iUNp80JraQDqBYx0WgZO+Np3XC+l5HrST+d
+e6Uu8flEVx6XR2/QQEdeRhBZ93U0BL5fWpz7yRkKj+K9HVpEQ+d5+9eKIGY6iVhJ
+cJ4ZDqtCk0359EcyadGXaIowAlmTj/CyP6x15tShJpmek3PLlXFY+uMN6jNjugGo
+cBhbXSshAgMBAAECggEAU9VaZ/Xkgq4ZHE+47FQIHU2qtXynkJrFDtpfmXVgTGDC
+YyUaAK4jYx34wed53S3v6EjJdudFEo9s2iGqKkkn5S/OyTNEUVATwceCnh0f+vhG
+ohYdB4ypDd74Xnsl8t6vw+H4kWuUWt98JdcKT7RJTVeqFLbZ2Ma6xpgBCojkDvVR
+FMER0iKXxFYeuIvyAQTdcQdIYc1U8gbI3lxXCTTtus1D9CC65cptARxZg/sKOMhX
+jnooAfI4/H6Zo2eYKny0VnBZM7doowajyitvH6MoAZSz2Fk1j3ix7POSTgnTlYnI
+F4ofqnYhUmoxZa+UtmPTNUJkH2XQX6WoOzO1XXef8QKBgQD4xWsK1iYjzTv8aUNg
+/TcgVXCl6fA/BnaPAa+MET8qzv/IQVkosEvlUZk9YPqJcRm8YVvTbuwx1ReERenf
+VcFEWt9x7dRBMLlbnWRaV0idv2pX5yEhM2B4GmDwVzfHCckVyot2IEjCeY9yXX4L
+ZsrEElleqAdHNP7GeAWJzGcuEwKBgQDsuIs7q+otF3J0xq7BjsLhoOo558HKWO2r
+XZ3+Y5VSFYdejXH0OPqR296+ebB+/gN8MgabScjDjTHRj39UJsBjYJJuvfJn5T+v
+qXDgNrWM1wOEXFebuHwbpYeLbIiHe8kGMY1KkIzAj069ySeld8dxtmLSG/N5b7TY
+JCeq4q7YewKBgCA3OKh7mQ7T2ivS2eXqhMQMLH1f8TvIM3xLhJdH+H0rt1YQmGI7
+imiVC5o2P9uiqOmLVh/oYnAFn3kCsMm6Sj/24K7ZVL5od+iUVlWYrg+3pSbjCJhL
+FfgXumwFb3S4ILFQvIS8o4+DvH7b+qGxWxrPIYGvktm21DORgW4Z6Va/AoGAY3QN
+Gx7ZHeSx85ndpfhirAS9I2LZKjg+cja8wDn6bCgbXYAzlhWyQEGNzZy2qEP0FuO1
+ntxa+r2BZrfRGPvG7HmQS/KFu1y3awfXInwZvng/RAa/z+6sRbk/vzX0DmfVR0Le
+R6t/Vw9eV6IBhCVUp9OmpPuVSTnDUuOtvr/KEa0CgYEAyKcdE63V0X7AQ6r9qQOC
+QUfH0cQ+J7U6aFzWnzCHg+HEZLeDGUC/t1bRtluPfLdWNCgGuy6XMQ5qRDDX9LFt
+ppKm22OakrdpMxYpftuZFCC9s3Vm5J3rAPwFGE7fqACiOXUjaP8GKXXTwtjiCyLU
+mbYUqS3kWXlRYPxds66gADs=
+-----END PRIVATE KEY-----
+        `;
+
+        $(function () {
+            getPublicKeyFromServer();
+
+            sendCPK2ServerAndGetAKFromServer(pub);
+
+            $("#btnSubmit").click(function () {
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(localStorage.getItem("fake-spk"));
+                
+                var aesKey = localStorage.getItem("fake-ak");
+                var encData = aesEncrypt($("#txtData").val(), aesKey);
+                sendBizReq(encData)
+            });
+        });
+
+        function getPublicKeyFromServer() {
+            $.get(url + "/com/req-pub?appId=" + appId, function (data, status) {
+                localStorage.setItem("fake-spk", data.data)
+            });
+        }
+
+        function sendCPK2ServerAndGetAKFromServer(enc){
+            $.ajax({
+                url: url + "/com/set-pub",
+                type: 'post',
+                // dataType: 'json',
+                data: JSON.stringify(enc),
+                headers: {
+                    'appId': appId,
+                    'Content-Type': 'application/json'
+                },
+                success: function (res) {
+                    console.log(res)
+
+                    var encrypt = new JSEncrypt();
+                    encrypt.setPrivateKey(pri)
+                    var aesKey = encrypt.decrypt(res.data);
+
+                    localStorage.setItem("fake-ak", aesKey)
+                },
+                error: function (e) {
+                    console.log(e)
+                }
+            });
+        }
+
+        function sendBizReq(data, aesKey) {
+            $.ajax({
+                url: url + "/biz",
+                type: 'post',
+                // dataType: 'json',
+                data: JSON.stringify({ ep: data, eak: aesKey }),
+                headers: {
+                    'appId': appId,
+                    'Content-Type': 'application/json'
+                },
+                success: function (res) {
+                    console.log(res)
+                    alert(res);
+                },
+                error: function (e) {
+                    console.log(e)
+                }
+            });
+        }
+
+        function getAesKey() {
+            var s = [];
+            var hexDigits = "0123456789abcdef";
+            for (var i = 0; i < 32; i++) {
+                s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+            }
+            s[14] = "4";
+            s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+            s[8] = s[13] = s[18] = s[23];
+            var uuid = s.join("");
+            return uuid;
+        }
+
+        function aesEncrypt(data, key) {
+            var encryptedData = CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(data), CryptoJS.enc.Utf8.parse(key), {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+
+            return encryptedData.toString();
+        }
+    </script>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="txtData" />
+        <button id="btnSubmit">submit</button>
+    </div>
+</body>
+
+</html>

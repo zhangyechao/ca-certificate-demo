@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA + AES sample</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jsencrypt/3.3.1/jsencrypt.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        let appId = "appId-2";
+        let url = "http://localhost:7777";
+
+        $(function () {
+            getPublicKeyFromServer();
+
+            $("#btnSubmit").click(function () {
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(localStorage.getItem("spk"));
+
+                var aesKey = getAesKey();
+                var encAesKey = encrypt.encrypt(aesKey);
+
+                var encData = aesEncrypt($("#txtData").val(), aesKey);
+                sendBizReq(encData, encAesKey)
+            });
+        });
+
+        function getPublicKeyFromServer() {
+            $.get(url + "/com/req-pub?appId=" + appId, function (data, status) {
+                localStorage.setItem("spk", data.data)
+            });
+        }
+
+        function sendBizReq(data, aesKey) {
+            $.ajax({
+                url: url + "/biz",
+                type: 'post',
+                // dataType: 'json',
+                data: JSON.stringify({ ep: data, eak: aesKey }),
+                headers: {
+                    'appId': appId,
+                    'Content-Type': 'application/json'
+                },
+                success: function (res) {
+                    console.log(res)
+                    alert(res);
+                },
+                error: function (e) {
+                    console.log(e)
+                }
+            });
+        }
+
+        function getAesKey() {
+            var s = [];
+            var hexDigits = "0123456789abcdef";
+            for (var i = 0; i < 32; i++) {
+                s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+            }
+            s[14] = "4";
+            s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+            s[8] = s[13] = s[18] = s[23];
+            var uuid = s.join("");
+            return uuid;
+        }
+
+        function aesEncrypt(data, key) {
+            var encryptedData = CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(data), CryptoJS.enc.Utf8.parse(key), {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+
+            return encryptedData.toString();
+        }
+    </script>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="txtData" />
+        <button id="btnSubmit">submit</button>
+    </div>
+</body>
+
+</html>
