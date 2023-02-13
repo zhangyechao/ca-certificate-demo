@@ -1,0 +1,19 @@
+version: '3.3'
+services: 
+  nginx:
+    depends_on:
+      - webapi
+    image: 'nginx:1.23.3-alpine'
+    container_name: nginx   
+    volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./nginx/ssl:/etc/nginx/ssl
+    ports:
+      - '443:443'
+  webapi:   
+    build:
+      dockerfile: ./WebApi/Dockerfile
+      context: . 
+    container_name: webapi    
+    environment:
+      Logging__Console__FormatterName:  
