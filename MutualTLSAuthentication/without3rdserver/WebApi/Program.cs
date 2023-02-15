@@ -17,6 +17,7 @@ builder.WebHost.ConfigureKestrel(x =>
             
             ClientCertificateValidation = (cer, chain, error) =>
             {
+                // valid the client certificate by you way.
                 return CusSSLLib.CaHelper.Valid(cer, chain, error);
             },
             ServerCertificate = serverCertificate

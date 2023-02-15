@@ -13,7 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "withnginx", "withnginx", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "withnginx\WebApi\WebApi.csproj", "{B5A9F466-C94C-4B59-9F46-7B2C99BF5304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{BFF3B1B2-1198-499D-8F33-D5EE0E780310}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{BFF3B1B2-1198-499D-8F33-D5EE0E780310}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "withiis", "withiis", "{0C67B1AF-8F22-4EF6-B26E-75801F106C22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "withiis\WebApi\WebApi.csproj", "{C011B490-98E7-4A3B-B773-453FF03492E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +41,10 @@ Global
 		{BFF3B1B2-1198-499D-8F33-D5EE0E780310}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFF3B1B2-1198-499D-8F33-D5EE0E780310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFF3B1B2-1198-499D-8F33-D5EE0E780310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C011B490-98E7-4A3B-B773-453FF03492E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C011B490-98E7-4A3B-B773-453FF03492E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C011B490-98E7-4A3B-B773-453FF03492E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C011B490-98E7-4A3B-B773-453FF03492E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +52,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{83606728-259E-4B00-9F1E-58429B7F0372} = {7271086A-EDD2-4834-ABAB-29E772A4243E}
 		{B5A9F466-C94C-4B59-9F46-7B2C99BF5304} = {A90BF089-B033-4F26-A258-62CCAA0D077D}
+		{C011B490-98E7-4A3B-B773-453FF03492E2} = {0C67B1AF-8F22-4EF6-B26E-75801F106C22}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {072FA5C2-C4C8-4195-B3D7-2BF09FF1B6CD}
